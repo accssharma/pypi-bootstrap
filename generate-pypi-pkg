@@ -1,0 +1,85 @@
+#!/bin/bash
+
+projectdir=$1
+github_uname=$2
+
+USAGE="${0} <absolute-path-to-project> <github_username>"
+
+if [[ ${projectdir} = "" && ${github_uname} = "" ]]; then
+    echo "Please provide valid path to the project and github username."
+    echo ${USAGE}
+    exit 1
+fi
+
+
+if [[ "${projectdir}" != /* ]]; then
+    echo "Please provide absolute path to where you want to create the pypi bootstrap directory"
+    echo "Eg. if you want to create 'demo-package' in '/home/joe/projects', then pass '/home/joe/projects/demo-package'"
+    echo ${USAGE}
+    exit 2
+fi
+
+if [ -d ${projectdir} ]; then
+    echo
+    echo "Project '${projectdir}' already exists!"
+    echo
+    read -r -p "Do you want to override? (This will FORCE remove ALL content and OEVERWRITE everything with the scaffold files.) [y/N]: " response
+    if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
+        rm -rf ${projectdir}/
+        echo
+        echo "Overwriting project files with fresh scaffold files: ${projectdir}"
+    else
+        echo "Exiting"
+        exit 0
+    fi
+fi
+gitignore=${projectdir}/.gitignore
+projectname=`basename ${projectdir}`
+echo
+echo
+echo "Creating project '${projectname}'. Creation location: `realpath ${projectdir}`"
+mkdir ${projectdir}
+
+echo "Copying seed files..."
+cp -r pypi-project/* ${projectdir}/
+mv ${projectdir}/pypi-package ${projectdir}/${projectname}
+
+echo "Initializing git..."
+
+cd ${projectdir}
+entrypoint=${projectname}-entry
+
+# get Python based .gitignore
+wget https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore -O $gitignore  > /dev/null 2>&1
+
+echo
+echo "Updating project name and entrypoint references.."
+# update package name references
+find . -not -path './.git/*' -type f -exec sed -i "s/YOUR_PROJECT_NAME/${projectname}/g" {} \;
+
+# update entrypoint reference
+find . -not -path './.git/*' -type f -exec sed -i "s/YOUR_PROJECT_ENTRYPOINT/${entrypoint}/g" {} \;
+
+# setup github repo locally and reference the remote
+git init
+git add -A
+git add $gitignore
+git commit -m "Add initial setup for pypi style project"
+git remote add origin git@github.com:${github_uname}/${projectname}.git
+
+echo
+listfiles="ls -latr ${projectdir}"
+echo \$ ${listfiles}
+${listfiles}
+
+echo
+echo
+echo "Next complete the following steps."
+echo "1. Navigte to ${projectdir}"
+echo "2. Verify file changes and references using 'git diff' and other commands"
+echo "3. Read README.md"
+echo
+echo "PYPI package name: ${projectname}"
+echo "PYPI entrypoint script for verifying installation: ${entrypoint}"
+echo "PYPI seed package structure creation done."
+echo
