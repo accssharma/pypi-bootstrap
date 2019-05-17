@@ -13,7 +13,8 @@ with open(os.path.join(os.path.dirname(__file__),
 
 
 with open('requirements.txt') as f:
-    requirements = f.readlines()
+    # support hash required requirements as well
+    requirements = [req.split(" --hash=sha256")[0] for req in f.readlines()]
 
 
 def long_desc():
