@@ -37,14 +37,12 @@ gitignore=${projectdir}/.gitignore
 projectname=`basename ${projectdir}`
 echo
 echo
-echo "Creating project '${projectname}'. Creation location: `realpath ${projectdir}`"
+echo "Creating python PYPI style package '${projectname}' in '`realpath ${projectdir}`'..."
 mkdir ${projectdir}
 
 echo "Copying seed files..."
 cp -r pypi-project/* ${projectdir}/
 mv ${projectdir}/pypi-package ${projectdir}/${projectname}
-
-echo "Initializing git..."
 
 cd ${projectdir}
 entrypoint=${projectname}-entry
@@ -52,8 +50,7 @@ entrypoint=${projectname}-entry
 # get Python based .gitignore
 wget https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore -O $gitignore  > /dev/null 2>&1
 
-echo
-echo "Updating project name and entrypoint references.."
+echo "Updating project metadata (name, entrypoint references, etc.)..."
 # update package name references
 find . -not -path './.git/*' -type f -exec sed -i "s/YOUR_PROJECT_NAME/${projectname}/g" {} \;
 
@@ -61,25 +58,30 @@ find . -not -path './.git/*' -type f -exec sed -i "s/YOUR_PROJECT_NAME/${project
 find . -not -path './.git/*' -type f -exec sed -i "s/YOUR_PROJECT_ENTRYPOINT/${entrypoint}/g" {} \;
 
 # setup github repo locally and reference the remote
-git init
+echo
+echo "[Git] Initializing..."
+git init -q
+echo "[Git] Staging generated files to the repository and adding initial commit..."
 git add -A
 git add $gitignore
-git commit -m "Add initial setup for pypi style project"
+git commit -q -m "Add initial setup for pypi style project"
+echo "[Git] Updating remote origin..."
 git remote add origin git@github.com:${github_uname}/${projectname}.git
 
 echo
 listfiles="ls -latr ${projectdir}"
+echo List of Generated Files:
 echo \$ ${listfiles}
 ${listfiles}
 
 echo
 echo
-echo "Next complete the following steps."
-echo "1. Navigte to ${projectdir}"
-echo "2. Verify file changes and references using 'git diff' and other commands"
-echo "3. Read README.md"
+echo "Next, complete the following steps:"
+echo "1. Navigte to '${projectdir}'."
+echo "2. Verify file changes and references using 'git diff' and 'git status' commands."
+echo "3. Read README.md and Makefile for important targets."
 echo
-echo "PYPI package name: ${projectname}"
-echo "PYPI entrypoint script for verifying installation: ${entrypoint}"
-echo "PYPI seed package structure creation done."
+echo "PYPI package name: '${projectname}'"
+echo "PYPI entrypoint script for verifying installation (exported to '/usr/local/bin' after installation): '${entrypoint}'"
+echo "PYPI style package file structure creation completed."
 echo

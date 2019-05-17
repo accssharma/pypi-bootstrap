@@ -1,33 +1,46 @@
 SHELL:=bash
 
-default:all
-
 PROJECT:=$(shell git rev-parse --show-toplevel)
 PROJECTNAME:=$(shell basename `git rev-parse --show-toplevel`)
+PYTHON:=python
+PIP:=pip
+
+SOURCES:= \
+	MANIFEST.in \
+	requirements.txt \
+	PYPI_README.md \
+	$(shell find $(PROJECT) -name '*.py')
 
 .PHONY: distribution
 distribution: $(SOURCES)
-	python setup.py sdist bdist_wheel
+	$(PYTHON) setup.py sdist bdist_wheel
 
 .PHONY: develop
 develop:
-	python setup.py develop
+	$(PYTHON) setup.py develop
 
 .PHONY: build
 build:
-	python setup.py build
+	$(PYTHON) setup.py build
+
+.PHONY: install
+install:
+	$(PYTHON) setup.py install
 
 .PHONY: upload
 upload: $(SDIST_TAR)
 	twine upload --skip-existing dist/*
 
-.PHONY: pip-install
-pip-install:
-	pip install --user --no-cache-dir --force-reinstall $(PROJECTNAME)
-
 .PHONY: clean
 clean:
-	python setup.py clean --all
+	$(PYTHON) setup.py clean --all
 	-rm -rf $(PROJECTNAME).egg-info
 	-rm -rf dist/
-	pip uninstall $(PROJECTNAME)
+
+.PHONY: pip-install
+pip-install:
+	$(PIP) install --user --no-cache-dir --force-reinstall $(PROJECTNAME)
+
+.PHONY: pip-uninstall
+pip-uninstall:
+	$(PIP) uninstall $(PROJECTNAME)
