@@ -1,26 +1,24 @@
 import os
 import sys
 import argparse
-
-RELPATH = os.path.dirname(os.path.realpath(__file__))
-# __vesion__ = x.x.x
-with open(os.path.join(RELPATH, "version.py")) as f:
-    exec(f.read())
-
-PACKAGENAME = os.path.split(RELPATH)[1]
+# __version__ = 'x.x.x'
+from YOUR_PROJECT_NAME.version import __version__
 
 
-def display_version():
-    print("Package: {} \nVersion: {}".format(PACKAGENAME, __version__))
+def get_version():
+    return "Package: {} | Version: {}".format(__package__,
+                                              __version__)
 
 
 def arguments_parser(argv):
     parser = argparse.ArgumentParser(
-        description='Process arguments for {}'.format(PACKAGENAME))
+        description="Process arguments for project: '{}'.".format(__package__))
+
     parser.add_argument('--version',
                         '-v',
-                        action='store_true',
-                        help='Version of {}'.format(PACKAGENAME))
+                        action='version',
+                        version=get_version())
+
     args = parser.parse_args(argv)
     return args
 
@@ -28,10 +26,7 @@ def arguments_parser(argv):
 def main():
     args = arguments_parser(sys.argv[1:])
 
-    if args.version:
-        display_version()
-    else:
-        pass
+    # continue with your application logic here
 
 
 if __name__ == '__main__':
