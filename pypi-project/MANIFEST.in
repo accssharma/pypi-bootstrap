@@ -1,4 +1,6 @@
 recursive-include YOUR_PROJECT_NAME *
+recursive-exclude YOUR_PROJECT_NAME *.pyc
+recursive-include tests *
 include README.md
 include requirements.txt
 global-exclude *.pyc
